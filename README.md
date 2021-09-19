@@ -19,4 +19,9 @@ Run the following command
 python main_thread.py -a secrets.json -n 10 -s multiload -t -f data/returns.csv
 ```
 
+A larger upload can be run using 
+```
+python main_thread.py -a secrets.json -n 10 -s multiload -t -f data/returns2.csv
+```
+
 For futher details on options run `python main_thread.py -h`
