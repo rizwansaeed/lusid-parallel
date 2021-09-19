@@ -1,0 +1,7 @@
+﻿lusid_identifier,date_(DD/MM/YYYY),market_value,returns,portfolio_scope,performance_scope,performance_code
+ABC,31/12/2009,10002,0.008699215,returns-load,gross-of-fees,total
+ABC,31/01/2010,10003,0.001702428,returns-load,net-of-fees,total
+ABC,28/02/2010,10004,0.005389957,returns-load,external-reported,total
+ABC,31/03/2010,10005,0.007711948,returns-load,external-reported,growth
+ABC,30/04/2010,10006,0.009559414,returns-load,external-reported,income
+ABC,31/05/2010,10007,0.00297816,returns-load,benchmark-index-level,total
