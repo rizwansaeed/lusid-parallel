@@ -82,7 +82,7 @@ def upload_return_series(portfolios_api, i, scope, return_scope, return_code, re
     logging.info(f"loaded {i} {return_scope} {return_code} {end - start:0.4f} seconds")
 
 
-def upload_returns(portfolios_api, num, scope, file):
+def upload_returns(portfolios_api, num, scope, file, batch_size):
     logging.info(f"uploading returns")
 
     returns = {}
@@ -104,6 +104,10 @@ def upload_returns(portfolios_api, num, scope, file):
             perf_scope[line[6]] = perf_code
             returns[line[5]] = perf_scope
 
+    for rtn_scope, rtn_codes in returns.items():
+        for rtn_code, rtns in rtn_codes.items():
+            returns[rtn_scope] = [rtns[i:i + batch_size] for i in range(0, len(rtns), batch_size)]
+
     start = time.perf_counter()
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=25) as executor:
@@ -119,7 +123,7 @@ def upload_returns(portfolios_api, num, scope, file):
             )
             for i in range(num)
             for rtn_scope, rtn_codes in returns.items()
-            for rtn_code, rtns in rtn_codes.items()
+            for rtns in rtn_codes
         ]
 
         concurrent.futures.wait(futures, timeout=None, return_when=ALL_COMPLETED)
@@ -141,6 +145,7 @@ def main(argv):
     ap.add_argument("-p", required=False, action="store_true", help="create portfolios")
     ap.add_argument("-t", required=False, action="store_true", help="load returns")
     ap.add_argument("-f", required=False, action="store", help="data file")
+    ap.add_argument("-b", required=False, action="store", help="batch size", type=int, default=2000)
 
     args = ap.parse_args()
 
@@ -153,8 +158,8 @@ def main(argv):
     if args.p and args.scope:
         create_portfolios(txns_api, num, args.scope)
 
-    if args.t and args.scope:
-        upload_returns(portfolios_api, num, args.scope, args.f)
+    if args.t and args.scope and args.b:
+        upload_returns(portfolios_api, num, args.scope, args.f, args.b)
 
 
 if __name__ == "__main__":
