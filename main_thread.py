@@ -1,6 +1,7 @@
 import argparse
 import concurrent.futures
 import csv
+import json
 import logging
 import sys
 import time
@@ -63,13 +64,18 @@ def upload_return_series(portfolios_api, i, scope, return_scope, return_code, re
 
     start = time.perf_counter()
 
-    portfolios_api.upsert_portfolio_returns(
-        scope=scope,
-        code=f"test-portfolio-{i}",
-        return_scope=return_scope,
-        return_code=return_code,
-        performance_return=returns
-    )
+    logging.info(f"sending {i} {return_scope} {return_code}")
+
+    try:
+        portfolios_api.upsert_portfolio_returns(
+            scope=scope,
+            code=f"test-portfolio-{i}",
+            return_scope=return_scope,
+            return_code=return_code,
+            performance_return=returns
+        )
+    except lu.ApiException as ex:
+        logging.error(f"{json.loads(ex.body)['title']}")
 
     end = time.perf_counter()
 
