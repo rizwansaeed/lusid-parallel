@@ -61,7 +61,6 @@ def create_portfolios(portfolios_api, num, scope):
 
 
 def upload_return_series(portfolios_api, i, scope, return_scope, return_code, returns):
-
     start = time.perf_counter()
 
     logging.info(f"sending {i} {return_scope} {return_code}")
@@ -104,9 +103,16 @@ def upload_returns(portfolios_api, num, scope, file, batch_size):
             perf_scope[line[6]] = perf_code
             returns[line[5]] = perf_scope
 
+    batched_rtns = {}
+
     for rtn_scope, rtn_codes in returns.items():
         for rtn_code, rtns in rtn_codes.items():
-            returns[rtn_scope] = [rtns[i:i + batch_size] for i in range(0, len(rtns), batch_size)]
+            # batch the returns
+            rtns_batches = [rtns[i:i + batch_size] for i in range(0, len(rtns), batch_size)]
+
+            batched_scope = batched_rtns.get(rtn_scope, {})
+            batched_scope[rtn_code] = rtns_batches
+            batched_rtns[rtn_scope] = batched_scope
 
     start = time.perf_counter()
 
@@ -122,8 +128,9 @@ def upload_returns(portfolios_api, num, scope, file, batch_size):
                 returns=rtns
             )
             for i in range(num)
-            for rtn_scope, rtn_codes in returns.items()
-            for rtns in rtn_codes
+            for rtn_scope, rtn_codes in batched_rtns.items()
+            for rtn_code, rtns_batch in rtn_codes.items()
+            for rtns in rtns_batch
         ]
 
         concurrent.futures.wait(futures, timeout=None, return_when=ALL_COMPLETED)
